@@ -1,0 +1,58 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: zocom
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: where-its
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: eu-north-1
+  environment:
+    EVENTS: where-its-events
+  iam:
+    role: arn:aws:iam::497180550327:role/lecture-role
+
+functions:
+  GetEvents:
+    handler: functions/GetEvents/index.handler
+    events:
+      - httpApi:
+          path: /events
+          method: get
+  BuyTicket:
+    handler: functions/BuyTicket/index.handler
+    events:
+      - httpApi:
+          path: /order
+          method: post
+  VerifyTicket:
+    handler: functions/VerifyTicket/index.handler
+    events:
+      - httpApi:
+          path: /verify
+          method: post
+
+resources:
+  Resources:
+    whereEvents:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: where-its-events
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    whereTickets:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: where-its-tickets
+        AttributeDefinitions:
+          - AttributeName: ticketId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ticketId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
